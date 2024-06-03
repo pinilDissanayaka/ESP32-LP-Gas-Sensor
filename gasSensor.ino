@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>
+#include <ArduinoJson.h>
 
 //Provide the token generation process info.
 #include "addons/TokenHelper.h"
@@ -15,10 +18,12 @@
 #define API_KEY "AIzaSyCMsRoYBGZnnttlDbtScuMfhHfqYnF57R0"
 // Insert RTDB URLefine the RTDB URL */
 #define DATABASE_URL "https://gassensor-3568d-default-rtdb.asia-southeast1.firebasedatabase.app/" 
+#define BOTtoken "7420995880:AAFSA-rw3EpBany477eMRU5AfkoA56wh6EY"  // your Bot Token (Get from Botfather)
+#define CHAT_ID "7420995880"
 
-#define DHT_PIN 4 // Pin for DHT sensor
-#define SMOISTURE_PIN 36 // Pin for Soil moisure sensor
-#define WATER_LEVEL_PIN 39 // Pin for water level sensor
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOTtoken, client);
+
 
 //Define Firebase Data object
 FirebaseData fbdo;
@@ -52,7 +57,7 @@ void setup() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
 
-    while (WiFi.status() != WL_CONNECTED){
+  while (WiFi.status() != WL_CONNECTED){
     Serial.print(".");
     digitalWrite(2, HIGH);
     delay(300);
@@ -101,6 +106,8 @@ void setup() {
   Serial.println(" ");
   mVolt = 0.0;
   digitalWrite(15, HIGH);
+  bot.sendMessage(CHAT_ID, "Bot started up", "");
+
 }
 
 void loop() {
@@ -134,6 +141,8 @@ void loop() {
   if(LPG_ppm >=LPG_threshold){
     digitalWrite(15, LOW);
     digitalWrite(4, HIGH);
+    bot.sendMessage(CHAT_ID, "Motion detected!!", "");
+
   }
   else{
     digitalWrite(15, HIGH);
