@@ -18,8 +18,8 @@
 #define API_KEY "AIzaSyCMsRoYBGZnnttlDbtScuMfhHfqYnF57R0"
 // Insert RTDB URLefine the RTDB URL */
 #define DATABASE_URL "https://gassensor-3568d-default-rtdb.asia-southeast1.firebasedatabase.app/" 
-#define BOTtoken "7420995880:AAFSA-rw3EpBany477eMRU5AfkoA56wh6EY"  // your Bot Token (Get from Botfather)
-#define CHAT_ID "7420995880"
+#define BOTtoken "7319969162:AAGpDNKPcBOs8-yaeSSg9FByWzhw4RVynHg"  // your Bot Token (Get from Botfather)
+#define CHAT_ID "1548356929"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -43,7 +43,7 @@ const float Ro_clean_air_factor = 10.0;
 int LPG_threshold=12;
 
 void setup() {
-  Serial.begin(9600);       /* Set baudrate to 9600 */
+  Serial.begin(115200);       /* Set baudrate to 9600 */
   pinMode(2, OUTPUT);
   pinMode(15, OUTPUT);
   pinMode(4, OUTPUT);
@@ -131,17 +131,18 @@ void loop() {
   unsigned int LPG_ppm = LPG_PPM(Ratio_RsRo);
   Serial.println(LPG_ppm);   /* Print the Gas PPM value in Serial Monitor */
  
-  Serial.println("");
-
   if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 800 || sendDataPrevMillis == 0)){
     sendDataPrevMillis = millis();
     Firebase.RTDB.setInt(&fbdo, "Anu/LPG_ppm", LPG_ppm);
+    Serial.println("Write on firebase");
   }
+  Serial.println("");
+
 
   if(LPG_ppm >=LPG_threshold){
     digitalWrite(15, LOW);
     digitalWrite(4, HIGH);
-    bot.sendMessage(CHAT_ID, "Motion detected!!", "");
+    bot.sendMessage(CHAT_ID, "LPG detected!!", "");
 
   }
   else{
