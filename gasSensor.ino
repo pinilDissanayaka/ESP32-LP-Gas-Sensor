@@ -1,9 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
-#include <WiFiClientSecure.h>
-#include <UniversalTelegramBot.h>
-#include <ArduinoJson.h>
 
 //Provide the token generation process info.
 #include "addons/TokenHelper.h"
@@ -18,12 +15,6 @@
 #define API_KEY "AIzaSyCMsRoYBGZnnttlDbtScuMfhHfqYnF57R0"
 // Insert RTDB URLefine the RTDB URL */
 #define DATABASE_URL "https://gassensor-3568d-default-rtdb.asia-southeast1.firebasedatabase.app/" 
-#define BOTtoken "7319969162:AAGpDNKPcBOs8-yaeSSg9FByWzhw4RVynHg"  // your Bot Token (Get from Botfather)
-#define CHAT_ID "1548356929"
-
-WiFiClientSecure client;
-UniversalTelegramBot bot(BOTtoken, client);
-
 
 //Define Firebase Data object
 FirebaseData fbdo;
@@ -142,8 +133,6 @@ void loop() {
   if(LPG_ppm >=LPG_threshold){
     digitalWrite(15, LOW);
     digitalWrite(4, HIGH);
-    bot.sendMessage(CHAT_ID, "LPG detected!!", "");
-
   }
   else{
     digitalWrite(15, HIGH);
