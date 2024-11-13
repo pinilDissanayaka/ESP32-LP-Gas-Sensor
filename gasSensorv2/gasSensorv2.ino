@@ -1,3 +1,5 @@
+#include <SoftwareSerial.h>
+
 byte MQ6_Pin = A0;          /* Define A0 for MQ Sensor Pin */
 float Referance_V = 3300.0; /* ESP32 Referance Voltage in mV */
 float RL = 1.0;             /* In Module RL value is 1k Ohm */
@@ -6,8 +8,28 @@ float mVolt = 0.0;
 const float Ro_clean_air_factor = 10.0;
 int LPG_threshold=12;
 
+
+//Create software serial object to communicate with SIM800L
+SoftwareSerial mySerial(3, 2); //SIM800L Tx & Rx is connected to Arduino #3 & #2
+
+
 void setup() {
   Serial.begin(9600);       /* Set baudrate to 9600 */
+  mySerial.begin(9600);  //Begin serial communication with Arduino and SIM800L
+
+  Serial.println("Initializing...");
+  delay(1000);
+
+  mySerial.println("AT"); //Once the handshake test is successful, it will back to OK
+  updateSerial();
+  mySerial.println("AT+CSQ"); //Signal quality test, value range is 0-31 , 31 is the best
+  updateSerial();
+  mySerial.println("AT+CCID"); //Read SIM information to confirm whether the SIM is plugged
+  updateSerial();
+  mySerial.println("AT+CREG?"); //Check whether it has registered in the network
+  updateSerial();
+
+
   pinMode(2, OUTPUT);
   pinMode(15, OUTPUT);
   pinMode(4, OUTPUT);
@@ -36,11 +58,13 @@ void setup() {
   Serial.println(" ");
   mVolt = 0.0;
   digitalWrite(15, HIGH);
-  bot.sendMessage(CHAT_ID, "Bot started up", "");
 
 }
 
 void loop() {
+
+  updateSerial();
+
   for(int i=0; i<500; i++){
     mVolt += Get_mVolt(MQ6_Pin);
   }
@@ -68,6 +92,7 @@ void loop() {
 
 
   if(LPG_ppm >=LPG_threshold){
+    sendText();
     digitalWrite(15, LOW);
     digitalWrite(4, HIGH);
   }
@@ -108,4 +133,28 @@ float Get_mVolt(byte AnalogPin) {
   delay(1);
   float mVolt = ADC_Value * (Referance_V / 4096.0);
   return mVolt;
+}
+
+void updateSerial()
+{
+  delay(500);
+  while (Serial.available()) 
+  {
+    mySerial.write(Serial.read());//Forward what Serial received to Software Serial Port
+  }
+  while(mySerial.available()) 
+  {
+    Serial.write(mySerial.read());//Forward what Software Serial received to Serial Port
+  }
+}
+
+
+void sendText(){
+  mySerial.println("AT+CMGF=1"); // Configuring TEXT mode
+  updateSerial();
+  mySerial.println("AT+CMGS=\"+ZZxxxxxxxxxx\"");//change ZZ with country code and xxxxxxxxxxx with phone number to sms
+  updateSerial();
+  mySerial.print("Last Minute Engineers | lastminuteengineers.com"); //text content
+  updateSerial();
+  mySerial.write(26);
 }
